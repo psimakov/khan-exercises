@@ -2025,6 +2025,52 @@ var Khan = (function() {
             };
         }
 
+		function ity_ef_on_submit(validator, pass) {
+			ity_ef_post_audit_data(validator, pass);
+			ity_ef_show_feedback(validator.guess);
+		}
+  
+		function ity_ef_show_feedback(guess){ 
+			var get_feedback_func = $(".question").attr("get-feedback-func");
+			if (get_feedback_func) {
+				var feedback_text = window[get_feedback_func](validator.guess);
+				if (feedback_text){
+					$("#check-answer-results .check-answer-message")
+							.html(feedback_text)
+							.tmpl()
+							.show()
+				}
+			}
+		}
+
+		function ity_ef_post_audit_data(validator, pass) {
+			var curTime = new Date().getTime();
+
+			var data = {
+                "context": exerciseId,
+                "seed": problemSeed,
+				"time_taken" : Math.round((curTime - lastAction) / 1000),
+				"attempt_number": attempts + 1,
+				"count_hints": hintsUsed,
+				"guess":validator.guess,
+				"solution":validator.solution,
+				"pass": pass};
+			
+            $.ajax({
+                url: '/',
+                type: "GET",
+                data: 'ity_ef_audit=' + JSON.stringify(data),
+                contentType: "application/json",
+                dataType: "json",
+                success: function(json) {
+					// pass
+				},
+                error: function(json) {
+					alert('Failed to record data on the server.');
+                }
+            });		
+		}
+
         function handleSubmit() {
             var pass = validator();
 
@@ -2046,6 +2092,8 @@ var Khan = (function() {
             $("#answercontent input").not("#check-answer-button, #hint")
                 .attr("disabled", "disabled");
             $("#check-answer-results p").hide();
+
+			ity_ef_on_submit(validator, pass);
 
             var checkAnswerButton = $("#check-answer-button");
 
@@ -2970,7 +3018,7 @@ var Khan = (function() {
                 // Inject the site markup, if it doesn't exist
                 if ($("#answer_area").length === 0) {
                     $.ajax({
-                        url: urlBase + "exercises/khan-site.html",
+                        url: "/?ity_ef_rule=container",
                         dataType: "html",
                         success: function(html) {
 
