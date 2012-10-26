@@ -3007,6 +3007,22 @@ var Khan = (function() {
 
     function loadModules() {
 
+		function ity_ef_get_site_page() {
+			function getParam(name) {
+				  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+				  var regexS = "[\\?&]" + name + "=([^&#]*)";
+				  var regex = new RegExp(regexS);
+				  var results = regex.exec(window.location.search);
+				  if(results == null) return "";
+				  else return decodeURIComponent(results[1].replace(/\+/g, " "));
+			}
+
+			var site = getParam("ity_ef_site");
+			if (site == 'raw') return "/?ity_ef_rule=raw";
+			return "/?ity_ef_rule=container"; 
+		}
+
+
         modulesLoaded = true;
 
         // Load module dependencies
@@ -3018,7 +3034,7 @@ var Khan = (function() {
                 // Inject the site markup, if it doesn't exist
                 if ($("#answer_area").length === 0) {
                     $.ajax({
-                        url: "/?ity_ef_rule=container",
+                        url: ity_ef_get_site_page(),
                         dataType: "html",
                         success: function(html) {
 
